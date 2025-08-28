@@ -2,8 +2,8 @@ import { MCPAgent, MCPClient } from 'mcp-use';
 import { ChatOpenAI } from '@langchain/openai';
 
 
-let _agent: MCPAgent | null = null;
-let _client: MCPClient | null = null;
+let agent: MCPAgent | null = null;
+let client: MCPClient | null = null;
 
 export interface MCPResultOptions {
   maxSteps?: number;
@@ -11,7 +11,7 @@ export interface MCPResultOptions {
 
 export async function runMCPAgent(prompt: string, opts: MCPResultOptions = {}): Promise<string> {
   if (!prompt?.trim()) throw new Error('Prompt empty');
-  if (!_agent) {
+  if (!agent) {
     // Minimal config: user can extend via mcp-config.json later
     let config = {
       mcpServers: {
@@ -29,7 +29,7 @@ export async function runMCPAgent(prompt: string, opts: MCPResultOptions = {}): 
         console.warn('[mcpAgent] Failed to read MCP_CONFIG file, using default. Error:', (e as Error).message);
       }
     }
-    _client = MCPClient.fromDict(config);
+    client = MCPClient.fromDict(config);
 
     const apiKey = Bun.env.DEEPSEEK_API_KEY;
 
@@ -47,16 +47,16 @@ export async function runMCPAgent(prompt: string, opts: MCPResultOptions = {}): 
       configuration: baseURL ? { baseURL } : undefined
     } ); 
 
-    _agent = new MCPAgent({ llm, client: _client, maxSteps: opts.maxSteps ?? 8 });
+    agent = new MCPAgent({ llm, client: client, maxSteps: opts.maxSteps ?? 8 });
   }
 
-  return _agent.run(prompt, opts.maxSteps);
+  return agent.run(prompt, opts.maxSteps);
 }
 
 export async function closeMCP(): Promise<void> {
-  if (_client) {
-    await _client.closeAllSessions();
+  if (client) {
+    await client.closeAllSessions();
   }
-  _agent = null;
-  _client = null;
+  agent = null;
+  client = null;
 }
