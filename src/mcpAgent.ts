@@ -13,14 +13,14 @@ export async function runMCPAgent(prompt: string, opts: MCPResultOptions = {}): 
   if (!prompt?.trim()) throw new Error('Prompt empty');
   if (!_agent) {
     // Minimal config: user can extend via mcp-config.json later
-    let config: any = {
+    let config = {
       mcpServers: {
         // Provide one example "everything" server (lazy npx). User must have network access.
         everything: { command: 'npx', args: ['-y', '@modelcontextprotocol/server-everything'] }
       }
     };
     // If user supplies a JSON file path via MCP_CONFIG, load it instead
-    const cfgPath = process.env.MCP_CONFIG;
+    const cfgPath = Bun.env.MCP_CONFIG;
     if (cfgPath) {
       try {
         const text = await Bun.file(cfgPath).text();
@@ -34,7 +34,7 @@ export async function runMCPAgent(prompt: string, opts: MCPResultOptions = {}): 
     const apiKey = Bun.env.DEEPSEEK_API_KEY;
 
     if (!apiKey) {
-      throw new Error('Provide DEEPSEEK_API_KEY (preferred) or OPENAI_API_KEY for the MCP agent LLM');
+      throw new Error('Provide DEEPSEEK_API_KEY for the MCP agent LLM');
     }
 
     const modelName ='deepseek-chat'
@@ -45,7 +45,7 @@ export async function runMCPAgent(prompt: string, opts: MCPResultOptions = {}): 
       temperature: 0.2,
       apiKey, 
       configuration: baseURL ? { baseURL } : undefined
-    } as any); 
+    } ); 
 
     _agent = new MCPAgent({ llm, client: _client, maxSteps: opts.maxSteps ?? 8 });
   }
