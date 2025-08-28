@@ -2,6 +2,8 @@
 
 Simple Bun + TypeScript wrapper for DeepSeek chat completions.
 
+Now also includes optional MCP agent mode via `mcp-use`.
+
 ## Setup
 
 1. Install deps:
@@ -57,4 +59,27 @@ console.log(answer);
 - Set `DEEPSEEK_API_KEY` via environment (Bun.env) before running.
 - Streaming helper `streamDeepSeek()` is available for incremental tokens.
 
+### MCP Mode
+
+Install extra deps (already in package.json after first install):
+
+```
+bun install
+```
+
+Set an OpenAI-compatible key (can be OpenAI or a DeepSeek compatible proxy):
+
+```
+
+Run with the `--mcp` flag to enable tools through the example `server-everything` MCP server (invoked via npx):
+
+```
+
+bun run index.ts --mcp "List the tools available and then fetch the Node.js homepage title"
+
+```
+
+You can modify `src/mcpAgent.ts` to add/remove servers or change the model.
+
 This project was created using `bun init` in bun v1.2.20.
+```

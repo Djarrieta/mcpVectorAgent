@@ -10,6 +10,12 @@
     "typescript": "^5"
   },
   "scripts": {
-    "ask": "bun run index.ts"
+  "ask": "bun run index.ts",
+  "ask:mcp": "bun run index.ts -- --mcp"
+  },
+  "dependencies": {
+    "@langchain/openai": "^0.6.9",
+    "langchain": "^0.3.31",
+    "mcp-use": "^0.1.17"
   }
 }
