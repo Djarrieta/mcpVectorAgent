@@ -1,4 +1,4 @@
-import { runMCPAgent } from './src/mcpAgent.ts';
+import { runMCPAgent, closeMCP } from './src/mcpAgent.ts';
 
 async function main() {
 	const [, , ...args] = process.argv;
@@ -10,8 +10,10 @@ async function main() {
 
 	const question = args.join(' ');
 	try {
-		const result = await runMCPAgent(question);
+			const result = await runMCPAgent(question);
 			console.log(result);
+			await closeMCP();
+			process.exit(0);
 	} catch (err) {
 		console.error('Error:', (err as Error).message);
 		process.exit(1);
