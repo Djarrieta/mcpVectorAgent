@@ -2,6 +2,22 @@
 
 A minimal Bun + TypeScript command‑line agent that uses the Model Context Protocol (via `mcp-use`) and a local Qdrant vector store for tool‑augmented LLM reasoning.
 
+## Quick Start
+
+Run (or have running) a local Qdrant instance before using the agent:
+
+```bash
+docker pull qdrant/qdrant
+docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant
+```
+
+Then install deps and ask a question (make sure env vars are set):
+
+```bash
+bun install
+DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run index.ts "What tools do you have?"
+```
+
 ## Features
 
 - Lazy‑initialized MCP agent with configurable max steps (default 8)
