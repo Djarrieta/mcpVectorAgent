@@ -1,4 +1,4 @@
-# MCP Test Agent
+# MCP Vector Agent
 
 A minimal Bun + TypeScript command‑line agent that uses the Model Context Protocol (via `mcp-use`) and a local Qdrant vector store for tool‑augmented LLM reasoning.
 

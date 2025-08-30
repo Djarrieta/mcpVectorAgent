@@ -1,5 +1,5 @@
 {
-  "name": "mcptest",
+  "name": "mcp-vector-agent",
   "module": "index.ts",
   "type": "module",
   "private": true,
