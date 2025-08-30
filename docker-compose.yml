@@ -1,0 +1,22 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.9.1
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+  mcpvectoragent:
+    build: .
+    container_name: mcpvectoragent
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL}
+    ports:
+      - "3100:3100"
+    depends_on:
+      - qdrant
+    volumes:
+      - ./mcp.config.json:/app/mcp.config.json
+      - ./qdrant_storage:/app/qdrant_storage
