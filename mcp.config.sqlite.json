@@ -1,16 +1,11 @@
 {
   "mcpServers": {
-    "sqlite": {
-      "command": "podman",
+     "sqlite": {
+      "command": "npx",
       "args": [
-        "run",
-        "--rm",
-        "-i",
-        "-v",
-        "mcp-test:/mcp",
-        "mcp/sqlite",
-        "--db-path",
-        "/Users/dario_arrieta/workspace/ai/mcpVectorAgent/test.db"
+        "-y",
+        "@executeautomation/database-server",
+        "./sqlite.db"
       ]
     }
   }
