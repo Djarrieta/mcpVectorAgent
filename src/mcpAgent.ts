@@ -5,6 +5,9 @@ import { loadMCPConfig, requireEnv } from "./utils";
 let agent: MCPAgent | null = null;
 let client: MCPClient | null = null;
 
+const apiKey = requireEnv("DEEPSEEK_API_KEY");
+const modelName = requireEnv("DEEPSEEK_MODEL");
+const baseURL = requireEnv("DEEPSEEK_BASE_URL");
 export interface MCPResultOptions {
   maxSteps?: number;
 }
@@ -17,9 +20,6 @@ export async function runMCPAgent(
   if (!agent) {
     const config = await loadMCPConfig();
     client = MCPClient.fromDict(config);
-    const apiKey = requireEnv("DEEPSEEK_API_KEY");
-    const modelName = requireEnv("DEEPSEEK_MODEL");
-    const baseURL = requireEnv("DEEPSEEK_BASE_URL");
 
     const llm = new ChatOpenAI({
       modelName,
@@ -33,7 +33,6 @@ export async function runMCPAgent(
 
   return agent.run(prompt, opts.maxSteps);
 }
-
 
 export async function closeMCP(): Promise<void> {
   if (client) {
