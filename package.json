@@ -10,11 +10,14 @@
     "typescript": "^5"
   },
   "scripts": {
-  "ask": "bun run index.ts",
-  "ask:mcp": "bun run index.ts -- --mcp"
+    "start": "bun run start.ts",
+    "ask": "bun run index.ts",
+    "ask:mcp": "bun run index.ts -- --mcp",
+    "seed": "bun run seedSQLite.ts"
   },
   "dependencies": {
     "@langchain/openai": "^0.6.9",
+    "@qdrant/js-client-rest": "^1.16.2",
     "langchain": "^0.3.31",
     "mcp-use": "^0.1.17"
   }
