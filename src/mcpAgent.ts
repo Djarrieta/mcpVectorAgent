@@ -1,13 +1,14 @@
 import { MCPAgent, MCPClient } from "mcp-use";
 import { ChatOpenAI } from "@langchain/openai";
-import { loadMCPConfig, requireEnv } from "./utils";
+import { loadMCPConfig } from "./utils";
 
 let agent: MCPAgent | null = null;
 let client: MCPClient | null = null;
 
-const apiKey = requireEnv("DEEPSEEK_API_KEY");
-const modelName = requireEnv("DEEPSEEK_MODEL");
-const baseURL = requireEnv("DEEPSEEK_BASE_URL");
+const apiKey = Bun.env.DEEPSEEK_API_KEY;
+const modelName = Bun.env.DEEPSEEK_MODEL;
+const baseURL = Bun.env.DEEPSEEK_BASE_URL;
+
 export interface MCPResultOptions {
   maxSteps?: number;
 }
@@ -27,6 +28,8 @@ export async function runMCPAgent(
       apiKey,
       configuration: baseURL ? { baseURL } : undefined,
     });
+
+    llm.client.chat.completions.parse
 
     agent = new MCPAgent({ llm, client: client, maxSteps: opts.maxSteps ?? 8 });
   }

@@ -1,8 +1,9 @@
 import { closeMCP, runMCPAgent } from "./src/mcpAgent";
-import { prompt } from "./src/promt";
+import { newChatResponsePromt } from "./src/promts";
 const start = async () => {
     try {
-        const result = await runMCPAgent(prompt);
+        const result = await runMCPAgent(newChatResponsePromt);
+        
         console.log( result);
         
         await closeMCP();
