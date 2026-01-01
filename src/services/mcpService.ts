@@ -40,13 +40,13 @@ export async function closeMCP(): Promise<void> {
 
 async function loadMCPConfig() {
   const cwd = process.cwd();
-  const file = path.join(cwd, "mcp.config.json");
+  const file = path.join(cwd, "src/mcpConfig/mcp.config.json");
   let raw: string;
   try {
     raw = await readFile(file, "utf8");
   } catch (err) {
     throw new Error(
-      "Required mcp.config.json not found in project root. Please create it to define mcpServers."
+      "Required mcp.config.json not found in src/mcpConfig/. Please create it to define mcpServers."
     );
   }
 
