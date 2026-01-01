@@ -29,8 +29,6 @@ export async function runMCPAgent(
       configuration: baseURL ? { baseURL } : undefined,
     });
 
-    llm.client.chat.completions.parse
-
     agent = new MCPAgent({ llm, client: client, maxSteps: opts.maxSteps ?? 8 });
   }
 

@@ -42,7 +42,7 @@ Cliente: iPhone
 Asistente: Perfecto, ¿podrías decirme el modelo exacto de tu iPhone? Por ejemplo: iPhone 12, iPhone 13, iPhone 14, etc.
 Cliente: iPhone 13 pro max
 Asistente: Excelente, ya tengo el modelo exacto: iPhone 13 Pro Max. ¿En qué ciudad te encuentras para calcular el costo de envío?
-Cliente: San Juan Nepomuceno, Bolivar.
+Cliente: Bogotá.
 """`
 
 export const getInformationPromt= ""
