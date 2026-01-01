@@ -1,13 +1,9 @@
 import { MCPAgent, MCPClient } from "mcp-use";
-import { ChatOpenAI } from "@langchain/openai";
-import { loadMCPConfig } from "./utils";
+import { loadMCPConfig } from "../utils";
+import { getLLMInstance } from "./llmService";
 
 let agent: MCPAgent | null = null;
 let client: MCPClient | null = null;
-
-const apiKey = Bun.env.DEEPSEEK_API_KEY;
-const modelName = Bun.env.DEEPSEEK_MODEL;
-const baseURL = Bun.env.DEEPSEEK_BASE_URL;
 
 export interface MCPResultOptions {
   maxSteps?: number;
@@ -22,12 +18,7 @@ export async function runMCPAgent(
     const config = await loadMCPConfig();
     client = MCPClient.fromDict(config);
 
-    const llm = new ChatOpenAI({
-      modelName,
-      temperature: 0.2,
-      apiKey,
-      configuration: baseURL ? { baseURL } : undefined,
-    });
+    const llm = getLLMInstance();
 
     agent = new MCPAgent({ llm, client: client, maxSteps: opts.maxSteps ?? 8 });
   }

@@ -10,7 +10,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "start": "bun run start.ts",
+    "start": "bun run src/start.ts",
     "ask": "bun run index.ts",
     "ask:mcp": "bun run index.ts -- --mcp",
     "seed": "bun run seedSQLite.ts"

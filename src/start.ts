@@ -1,14 +1,14 @@
-import { closeMCP, runMCPAgent } from "./src/mcpAgent";
-import { newChatResponsePromt } from "./src/promts";
-import { getStructuredOutput } from "./src/structuredOutput";
+import { closeMCP, runMCPAgent } from "./services/mcpService";
+import { getStructuredOutput } from "./services/structuredOutputService";
+import { newChatResponsePromt } from "./promts";
+
 const start = async () => {
     try {
         const result = await runMCPAgent(newChatResponsePromt);
-        console.log( result);
         const formattedResult=await getStructuredOutput(newChatResponsePromt + result);
        
        console.log( formattedResult);
-       
+
         await closeMCP();
         process.exit(0);
     } catch (err) {

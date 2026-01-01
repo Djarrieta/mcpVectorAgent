@@ -1,27 +1,9 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
-import { type Order } from "./types.ts";
-
-const apiKey = Bun.env.DEEPSEEK_API_KEY;
-const modelName = Bun.env.DEEPSEEK_MODEL;
-const baseURL = Bun.env.DEEPSEEK_BASE_URL;
-
-let model: ChatOpenAI | null = null;
-
-function getModel(): ChatOpenAI {
-  if (!model) {
-    model = new ChatOpenAI({
-      modelName,
-      temperature: 0.2,
-      apiKey,
-      configuration: baseURL ? { baseURL } : undefined,
-    });
-  }
-  return model;
-}
+import { type Order } from "../types";
+import { getLLMInstance } from "./llmService";
 
 export async function getStructuredOutput(text: string): Promise<Order> {
-  const llm = getModel();
+  const llm = getLLMInstance();
 
   const prompt = `Extract order information from the customer message and respond with ONLY valid JSON in this format:
 {
