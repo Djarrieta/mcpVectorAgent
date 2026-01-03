@@ -1,6 +1,7 @@
 import { Telegraf, Context } from "telegraf";
 import { message } from "telegraf/filters";
 import { runMCPAgent, closeMCP } from "./mcpService";
+import { ChatHistorySQLite } from "./chatHistorySQLite";
 
 interface TelegramServiceConfig {
   token: string;
@@ -19,13 +20,14 @@ export class TelegramService {
   private bot: Telegraf<Context>;
   private conversations: Map<number, ConversationContext> = new Map();
   private systemPrompt: string;
+  private chatHistory: ChatHistorySQLite;
 
   constructor(config: TelegramServiceConfig) {
     this.bot = new Telegraf(config.token);
     this.systemPrompt = config.prompt || "";
+    this.chatHistory = new ChatHistorySQLite();
     this.setupHandlers();
   }
-
 
   private setupHandlers(): void {
 
@@ -43,15 +45,21 @@ export class TelegramService {
         // Show typing indicator
         await ctx.sendChatAction("typing");
 
-        // Build prompt with conversation context
+        // Store user messages in chat history
+        this.chatHistory.addMessage(userId.toString(), "user", userMessage, new Date());
 
-        console.log("Full Prompt:", userMessage);
+        //Build conversation context
+        const conversation = this.chatHistory.getByUser(userId.toString());
+
+        const fullPrompt = this.systemPrompt + "\n\nLa conversación hasta ahora va así:" + conversation.map(msg => {
+          return `${msg.role === 'user' ? 'Usuario' : 'Asistente'}: ${msg.message}`;
+        }).join("\n");
+        console.log("Full Prompt Sent to MCP Agent:", fullPrompt);
 
         // Get response from MCP Agent with LLM
-        const response = await runMCPAgent(userMessage);
-
-        // Store assistant response in context
-
+        const response = await runMCPAgent(fullPrompt);
+        // Store assistant response in chat history
+        this.chatHistory.addMessage(userId.toString(), "assistant", response, new Date());
 
         // Send the response
         await ctx.reply(response);
@@ -102,12 +110,14 @@ export class TelegramService {
     // Enable graceful stop
     process.once("SIGINT", async () => {
       console.log("Stopping bot...");
+      this.chatHistory.close();
       await closeMCP();
       await this.bot.stop("SIGINT");
       process.exit(0);
     });
     process.once("SIGTERM", async () => {
       console.log("Stopping bot...");
+      this.chatHistory.close();
       await closeMCP();
       await this.bot.stop("SIGTERM");
       process.exit(0);
@@ -131,12 +141,14 @@ export class TelegramService {
 
     process.once("SIGINT", async () => {
       console.log("Stopping bot...");
+      this.chatHistory.close();
       await closeMCP();
       await this.bot.stop("SIGINT");
       process.exit(0);
     });
     process.once("SIGTERM", async () => {
       console.log("Stopping bot...");
+      this.chatHistory.close();
       await closeMCP();
       await this.bot.stop("SIGTERM");
       process.exit(0);
@@ -147,6 +159,7 @@ export class TelegramService {
    * Stop the bot and close MCP connections
    */
   async stop(): Promise<void> {
+    this.chatHistory.close();
     await closeMCP();
     await this.bot.stop();
     console.log("❌ Bot stopped");

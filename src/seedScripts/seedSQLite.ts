@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
+import { DB_PATH } from "../constants";
 
-const DB_PATH = "./sqlite.db";
 const TABLE_NAME = "shipping_costs";
 
 // Colombian cities
