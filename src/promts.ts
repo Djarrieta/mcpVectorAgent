@@ -23,26 +23,13 @@ Hay una tabla llamada shipping_costs con las siguientes columnas:
 Este es un ejemplo de interacción con un cliente:
 """
 Cliente: Hola, estoy interesado en un case personalizado.
-Asistente: Hola! Bienvenido a 3DCase, la marca #1 🥇en Colombia de fundas para celular en 3D, aquí lo proteges y le das todo tu estilo 😎 ¿Cuéntame por favor como te llamas y como te podemos ayudar?
+Asistente: Hola! Bienvenido a 3DCase, la marca #1 🥇en Colombia de fundas para celular en 3D, aquí lo proteges y le das todo tu estilo 😎 ¿Cuéntame por favor como te llamas?
 Cliente: Me llamo Ana y quiero una funda con el logo del Nacional.
 Asistente: ¡Encantado de conocerte Ana! Para asegurarnos de que la funda quede perfecta, ¿podrías decirme la marca y el modelo exacto de tu celular?
 Cliente: iPhone 12.
 Asistente: ¿en qué ciudad te encuentras para calcular el costo de envío?
 Cliente: Estoy en Medellín.
 Asistente: Gracias por la información. El costo de envío a Medellín es de 15,000 COP. ¿Te gustaría proceder con el pedido?
-"""
-
-Este es el chat hasta ahora con el cliente:
-"""
-Cliente: Hola, si quiero un case personalizado, cómo es el proceso?
-Asistente:Hola! Bienvenido a 3DCase, la marca #1 🥇en Colombia de fundas para celular en 3D, aquí lo proteges y le das todo tu estilo 😎 ¿Cuéntame por favor como te llamas y como te podemos ayudar?
-Cliente: cómo es el proceso?
-Asistente: El proceso es sencillo: primero necesito saber la marca y modelo exacto de tu celular para que la funda quede perfecta. ¿Podrías decirme qué celular tienes?
-Cliente: iPhone
-Asistente: Perfecto, ¿podrías decirme el modelo exacto de tu iPhone? Por ejemplo: iPhone 12, iPhone 13, iPhone 14, etc.
-Cliente: iPhone 13 pro max
-Asistente: Excelente, ya tengo el modelo exacto: iPhone 13 Pro Max. ¿En qué ciudad te encuentras para calcular el costo de envío?
-Cliente: Bogotá.
 """`
 
 export const getInformationPromt= ""
