@@ -1,26 +1,12 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { type Order } from "../types";
 import { getLLMInstance } from "./llmService";
+import { type Order, generateOrderSchemaDescription } from "../types/Order";
 
 export async function getStructuredOutput(text: string): Promise<Order> {
   const llm = getLLMInstance();
 
   const prompt = `Extract order information from the customer message and respond with ONLY valid JSON in this format:
-{
-  "customerName": "string",
-  "device": "string (e.g., iPhone 13 Pro Max, Samsung Galaxy S21)",
-  "designTheme": "string (e.g., Barcelona, Dragon Ball, Nacional)",
-  "price": number (base price in COP),
-  "shippingCost": number (cost in COP),
-  "totalCost": number (price + shippingCost),
-  "shippingZone": {
-    "city": "string",
-    "department": "string",
-    "baseCost": number (cost in COP),
-    "isRemoteArea": boolean
-  },
-  "estimatedDeliveryDays": number (3-5 for normal areas, 10 for remote areas)
-}
+${generateOrderSchemaDescription()}
 
 Customer message: ${text}`;
 

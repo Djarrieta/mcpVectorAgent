@@ -17,10 +17,12 @@
     "telegram": "bun run src/startTelegram.ts"
   },
   "dependencies": {
-    "@langchain/openai": "^0.6.9",
-    "@qdrant/js-client-rest": "^1.16.2",
-    "langchain": "^0.3.31",
-    "mcp-use": "^0.1.17",
-    "telegraf": "^4.16.3"
+    "@langchain/openai": "0.6.9",
+    "@qdrant/js-client-rest": "1.16.2",
+    "langchain": "0.3.31",
+    "mcp-use": "0.1.17",
+    "mcptest": ".",
+    "telegraf": "4.16.3",
+    "zod": "3.24.1"
   }
 }

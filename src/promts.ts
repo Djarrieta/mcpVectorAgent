@@ -18,7 +18,10 @@ Tengo las siguientes herramientas disponibles para trabajar con la base de datos
 Hay una tabla llamada shipping_costs con las siguientes columnas:
 - id: Identificador único de la fila
 - city: Nombre de la ciudad
+- department: Nombre del departamento
 - shipping_cost_cop: Costo de envío en pesos colombianos
+- delivery_estimated_days: Días estimados de entrega
+- created_at: Fecha de creación del registro
 
 Este es un ejemplo de interacción con un cliente:
 """
