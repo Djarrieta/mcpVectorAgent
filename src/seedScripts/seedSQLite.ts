@@ -3,28 +3,28 @@ import { DB_PATH } from "../constants";
 
 const TABLE_NAME = "shipping_costs";
 
-// Colombian cities
+// Colombian cities with departments and estimated delivery days
 const colombianCities = [
-  "Bogotá",
-  "Medellín",
-  "Cali",
-  "Barranquilla",
-  "Cartagena",
-  "Cúcuta",
-  "Bucaramanga",
-  "Santa Marta",
-  "Manizales",
-  "Pereira",
-  "Armenia",
-  "Ibagué",
-  "Villavicencio",
-  "Tuluá",
-  "Popayán",
-  "Pasto",
-  "Quibdó",
-  "Montería",
-  "Sincelejo",
-  "Valledupar",
+  { city: "Bogotá", department: "Cundinamarca", estimatedDays: 1 },
+  { city: "Medellín", department: "Antioquia", estimatedDays: 2 },
+  { city: "Cali", department: "Valle del Cauca", estimatedDays: 2 },
+  { city: "Barranquilla", department: "Atlántico", estimatedDays: 3 },
+  { city: "Cartagena", department: "Bolívar", estimatedDays: 3 },
+  { city: "Cúcuta", department: "Norte de Santander", estimatedDays: 4 },
+  { city: "Bucaramanga", department: "Santander", estimatedDays: 3 },
+  { city: "Santa Marta", department: "Magdalena", estimatedDays: 3 },
+  { city: "Manizales", department: "Caldas", estimatedDays: 2 },
+  { city: "Pereira", department: "Risaralda", estimatedDays: 2 },
+  { city: "Armenia", department: "Quindío", estimatedDays: 2 },
+  { city: "Ibagué", department: "Tolima", estimatedDays: 2 },
+  { city: "Villavicencio", department: "Meta", estimatedDays: 3 },
+  { city: "Tuluá", department: "Valle del Cauca", estimatedDays: 2 },
+  { city: "Popayán", department: "Cauca", estimatedDays: 3 },
+  { city: "Pasto", department: "Nariño", estimatedDays: 4 },
+  { city: "Quibdó", department: "Chocó", estimatedDays: 5 },
+  { city: "Montería", department: "Córdoba", estimatedDays: 3 },
+  { city: "Sincelejo", department: "Sucre", estimatedDays: 3 },
+  { city: "Valledupar", department: "Cesar", estimatedDays: 3 },
 ];
 
 function getRandomShippingCost(): number {
@@ -48,14 +48,16 @@ function seed() {
       db.prepare(`DROP TABLE IF EXISTS ${TABLE_NAME}`).run();
     }
 
-    // Create table with city and shipping cost
+    // Create table with city, department, shipping cost, and estimated delivery days
     console.log(`Creating table ${TABLE_NAME}...`);
     db.prepare(
       `
       CREATE TABLE ${TABLE_NAME} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         city TEXT NOT NULL,
+        department TEXT NOT NULL,
         shipping_cost_cop INTEGER NOT NULL,
+        delivery_estimated_days INTEGER NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `
@@ -63,15 +65,15 @@ function seed() {
 
     // Prepare insert statement
     const insert = db.prepare(
-      `INSERT INTO ${TABLE_NAME} (city, shipping_cost_cop) VALUES (?, ?)`
+      `INSERT INTO ${TABLE_NAME} (city, department, shipping_cost_cop, delivery_estimated_days) VALUES (?, ?, ?, ?)`
     );
 
     // Insert all cities with random shipping costs
     console.log(`Adding ${colombianCities.length} cities to table...`);
 
-    const insertMany = db.transaction((cities: string[]) => {
-      for (const city of cities) {
-        insert.run(city, getRandomShippingCost());
+    const insertMany = db.transaction((cities: typeof colombianCities) => {
+      for (const cityData of cities) {
+        insert.run(cityData.city, cityData.department, getRandomShippingCost(), cityData.estimatedDays);
       }
     });
 
@@ -88,7 +90,7 @@ function seed() {
     console.log(`- Cities: ${colombianCities.length}`);
     console.log("\nSample data:");
     sampleData.forEach((row: any) => {
-      console.log(`  ${row.city}: ${row.shipping_cost_cop} COP`);
+      console.log(`  ${row.city} (${row.department}): ${row.shipping_cost_cop} COP - ${row.delivery_estimated_days} days`);
     });
 
     db.close();
