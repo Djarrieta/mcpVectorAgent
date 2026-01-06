@@ -128,24 +128,36 @@ export class OrdersSQLite {
    * @param id The autoincremental ID of the order
    * @param data Partial object containing the fields to update
    */
-    updateOrder(id: number, data: Partial<Omit<Order, 'id'>>): void {
-        const entries = Object.entries(data);
+    updateOrder(id: number, data: Partial<Order>): Order | null {
+        // 1. Filter out id and any "empty" values (undefined, null, or empty string)
+        const entries = Object.entries(data).filter(([key, value]) => {
+            return (
+                key !== 'id' &&
+                value !== undefined &&
+                value !== null &&
+                value !== ''
+            );
+        });
 
-        if (entries.length === 0) return;
+        // If nothing to update, just return the current state
+        if (entries.length === 0) {
+            return this.getById(id);
+        }
 
-        // Map fields to SQL syntax and handle boolean conversion for SQLite
+        // 2. Build the SET clause
         const setClause = entries
             .map(([key]) => `${key} = ?`)
             .join(', ');
 
+        // 3. Prepare values, handling the SQLite boolean conversion
         const values = entries.map(([key, value]) => {
-            // Special case: convert boolean to 0/1 for SQLite
             if (key === 'requiresHumanIntervention') {
                 return value ? 1 : 0;
             }
-            return value ?? null;
+            return value;
         });
 
+        // 4. Execute Update
         const stmt = this.db.prepare(`
       UPDATE orders 
       SET ${setClause} 
@@ -153,6 +165,9 @@ export class OrdersSQLite {
     `);
 
         stmt.run(...values, id);
+
+        // 5. Return the fresh data from the DB
+        return this.getById(id);
     }
 
     text(order: Order): string {
