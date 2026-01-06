@@ -2,6 +2,8 @@ import { Telegraf, Context } from "telegraf";
 import { message } from "telegraf/filters";
 import { runMCPAgent, closeMCP } from "./mcpService";
 import { ChatHistorySQLite } from "./chatHistorySQLite";
+import { getStructuredOutput } from "./structuredOutputService";
+import { OrdersSQLite } from "./OrdersSQLite";
 
 interface TelegramServiceConfig {
   token: string;
@@ -21,11 +23,13 @@ export class TelegramService {
   private conversations: Map<number, ConversationContext> = new Map();
   private systemPrompt: string;
   private chatHistory: ChatHistorySQLite;
+  private ordersService: OrdersSQLite
 
   constructor(config: TelegramServiceConfig) {
     this.bot = new Telegraf(config.token);
     this.systemPrompt = config.prompt || "";
     this.chatHistory = new ChatHistorySQLite();
+    this.ordersService = new OrdersSQLite()
     this.setupHandlers();
   }
 
@@ -45,24 +49,33 @@ export class TelegramService {
         // Show typing indicator
         await ctx.sendChatAction("typing");
 
+        const order = this.ordersService.getOrCreateByUserId(userId.toString(), { requiresHumanIntervention: false })
         // Store user messages in chat history
         this.chatHistory.addMessage(userId.toString(), "user", userMessage, new Date());
 
         //Build conversation context
-        const conversation = this.chatHistory.getByUser(userId.toString());
+        const chatResponsePromt = this.systemPrompt +
+          "\n\nLa conversación hasta ahora va así:" + this.chatHistory.getByUserAsText(userId.toString()) +
+          "\n\nDatos del pedido hasta el momento:" + this.ordersService.text(order);
 
-        const fullPrompt = this.systemPrompt + "\n\nLa conversación hasta ahora va así:" + conversation.map(msg => {
-          return `${msg.role === 'user' ? 'Usuario' : 'Asistente'}: ${msg.message}`;
-        }).join("\n");
-        console.log("Full Prompt Sent to MCP Agent:", fullPrompt);
+        console.log("Full Prompt Sent to MCP Agent:", chatResponsePromt);
 
-        // Get response from MCP Agent with LLM
-        const response = await runMCPAgent(fullPrompt);
-        // Store assistant response in chat history
-        this.chatHistory.addMessage(userId.toString(), "assistant", response, new Date());
+        // Get chatResponsse from MCP Agent with LLM
+        const chatResponsse = await runMCPAgent(chatResponsePromt);
+        // Store assistant chatResponsse in chat history
+        this.chatHistory.addMessage(userId.toString(), "assistant", chatResponsse, new Date());
 
-        // Send the response
-        await ctx.reply(response);
+        const formattedResponsePromt = "\n\nLa conversación hasta ahora va así:" + this.chatHistory.getByUserAsText(userId.toString()) +
+          "\n\nDatos del pedido hasta el momento:" + this.ordersService.text(order);
+        const formattedResponse = await getStructuredOutput(formattedResponsePromt)
+
+        console.log({ formattedResponse })
+
+        const updatedOrder = this.ordersService.updateOrder(order.id, formattedResponse)
+        console.log({ updatedOrder })
+
+        // Send the chatResponsse
+        await ctx.reply(chatResponsse);
       } catch (error) {
         console.error("Error processing message:", error);
         await ctx.reply(

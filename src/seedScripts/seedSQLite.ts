@@ -5,26 +5,26 @@ const TABLE_NAME = "shipping_costs";
 
 // Colombian cities with departments and estimated delivery days
 const colombianCities = [
-  { city: "Bogotá", department: "Cundinamarca", estimatedDays: 1 },
-  { city: "Medellín", department: "Antioquia", estimatedDays: 2 },
-  { city: "Cali", department: "Valle del Cauca", estimatedDays: 2 },
-  { city: "Barranquilla", department: "Atlántico", estimatedDays: 3 },
-  { city: "Cartagena", department: "Bolívar", estimatedDays: 3 },
-  { city: "Cúcuta", department: "Norte de Santander", estimatedDays: 4 },
-  { city: "Bucaramanga", department: "Santander", estimatedDays: 3 },
-  { city: "Santa Marta", department: "Magdalena", estimatedDays: 3 },
-  { city: "Manizales", department: "Caldas", estimatedDays: 2 },
-  { city: "Pereira", department: "Risaralda", estimatedDays: 2 },
-  { city: "Armenia", department: "Quindío", estimatedDays: 2 },
-  { city: "Ibagué", department: "Tolima", estimatedDays: 2 },
-  { city: "Villavicencio", department: "Meta", estimatedDays: 3 },
-  { city: "Tuluá", department: "Valle del Cauca", estimatedDays: 2 },
-  { city: "Popayán", department: "Cauca", estimatedDays: 3 },
-  { city: "Pasto", department: "Nariño", estimatedDays: 4 },
-  { city: "Quibdó", department: "Chocó", estimatedDays: 5 },
-  { city: "Montería", department: "Córdoba", estimatedDays: 3 },
-  { city: "Sincelejo", department: "Sucre", estimatedDays: 3 },
-  { city: "Valledupar", department: "Cesar", estimatedDays: 3 },
+  { city: "Bogotá", department: "Cundinamarca", deliverySstimatedDays: 1 },
+  { city: "Medellín", department: "Antioquia", deliverySstimatedDays: 2 },
+  { city: "Cali", department: "Valle del Cauca", deliverySstimatedDays: 2 },
+  { city: "Barranquilla", department: "Atlántico", deliverySstimatedDays: 3 },
+  { city: "Cartagena", department: "Bolívar", deliverySstimatedDays: 3 },
+  { city: "Cúcuta", department: "Norte de Santander", deliverySstimatedDays: 4 },
+  { city: "Bucaramanga", department: "Santander", deliverySstimatedDays: 3 },
+  { city: "Santa Marta", department: "Magdalena", deliverySstimatedDays: 3 },
+  { city: "Manizales", department: "Caldas", deliverySstimatedDays: 2 },
+  { city: "Pereira", department: "Risaralda", deliverySstimatedDays: 2 },
+  { city: "Armenia", department: "Quindío", deliverySstimatedDays: 2 },
+  { city: "Ibagué", department: "Tolima", deliverySstimatedDays: 2 },
+  { city: "Villavicencio", department: "Meta", deliverySstimatedDays: 3 },
+  { city: "Tuluá", department: "Valle del Cauca", deliverySstimatedDays: 2 },
+  { city: "Popayán", department: "Cauca", deliverySstimatedDays: 3 },
+  { city: "Pasto", department: "Nariño", deliverySstimatedDays: 4 },
+  { city: "Quibdó", department: "Chocó", deliverySstimatedDays: 5 },
+  { city: "Montería", department: "Córdoba", deliverySstimatedDays: 3 },
+  { city: "Sincelejo", department: "Sucre", deliverySstimatedDays: 3 },
+  { city: "Valledupar", department: "Cesar", deliverySstimatedDays: 3 },
 ];
 
 function getRandomShippingCost(): number {
@@ -73,7 +73,7 @@ function seed() {
 
     const insertMany = db.transaction((cities: typeof colombianCities) => {
       for (const cityData of cities) {
-        insert.run(cityData.city, cityData.department, getRandomShippingCost(), cityData.estimatedDays);
+        insert.run(cityData.city, cityData.department, getRandomShippingCost(), cityData.deliverySstimatedDays);
       }
     });
 

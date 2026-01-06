@@ -69,6 +69,14 @@ export class ChatHistorySQLite {
     }));
   }
 
+  getByUserAsText(userId: string) {
+    const conversation = this.getByUser(userId)
+
+    return conversation.map(msg => {
+      return `${msg.role === 'user' ? 'Usuario' : 'Asistente'}: ${msg.message}`;
+    }).join("\n")
+  }
+
   /**
    * Delete all messages for a specific user
    * @param userId - The user ID
