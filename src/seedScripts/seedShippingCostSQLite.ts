@@ -31,7 +31,7 @@ function getRandomShippingCost(): number {
   return Math.floor(Math.random() * (50000 - 5000 + 1)) + 5000;
 }
 
-function seed() {
+function seedShippingCostSQLite() {
   try {
     console.log(`Connecting to SQLite database at ${DB_PATH}...`);
     const db = new Database(DB_PATH);
@@ -100,4 +100,4 @@ function seed() {
   }
 }
 
-seed();
+seedShippingCostSQLite();

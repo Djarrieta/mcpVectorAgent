@@ -13,7 +13,7 @@
     "start": "bun run src/start.ts",
     "ask": "bun run index.ts",
     "ask:mcp": "bun run index.ts -- --mcp",
-    "seed": "bun run src/seedScripts/seedSQLite.ts",
+    "seed": "bun run src/seedScripts/seedShippingCostSQLite.ts && bun run src/seedScripts/seedInventorySQLite.ts ",
     "telegram": "bun run src/startTelegram.ts"
   },
   "dependencies": {
