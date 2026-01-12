@@ -171,18 +171,21 @@ export class OrdersSQLite {
     }
 
     text(order: Order): string {
+        const formatLabel = (key: string) =>
+            key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+
+        const lines = Object.entries(order)
+            .map(([key, value]) => {
+                // Handle special formatting for specific keys
+                if (key === 'estimatedDeliveryDays') return `Delivery: ${value} days`;
+
+                const displayValue = value ?? 'N/A';
+                return `${formatLabel(key)}: ${displayValue}`;
+            });
 
         return `
 [ORDER_DATA]
-ID: ${order.id}
-UserID: ${order.userId}
-Status: ${order.requiresHumanIntervention ? 'REQUIRES_INTERVENTION' : 'AUTO_PROCESSED'}
-Customer: ${order.userName || 'N/A'}
-Contact: ${order.email || 'N/A'} | ${order.phone || 'N/A'}
-Product: ${order.device || 'N/A'}
-Financials: Price=${order.price}, Shipping=${order.shippingCost}, Total=${(order.price || 0) + (order.shippingCost || 0)}
-Location: ${order.address}, ${order.city}, ${order.department}
-Delivery: ${order.estimatedDeliveryDays} days
+${lines.join('\n')}
 [/ORDER_DATA]
   `.trim();
     }

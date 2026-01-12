@@ -2,7 +2,7 @@ import { Telegraf, Context } from "telegraf";
 import { message } from "telegraf/filters";
 import { runMCPAgent, closeMCP } from "./mcpService";
 import { ChatHistorySQLite } from "./chatHistorySQLite";
-import { getStructuredOutput } from "./structuredOutputService";
+import { getFinalAnswer, getStructuredOutput } from "./structuredOutputService";
 import { OrdersSQLite } from "./OrdersSQLite";
 
 interface TelegramServiceConfig {
@@ -53,23 +53,30 @@ export class TelegramService {
         // Store user messages in chat history
         this.chatHistory.addMessage(userId.toString(), "user", userMessage, new Date());
 
+        console.log(this.ordersService.text(order))
+
+        if (order.requiresHumanIntervention) {
+          return
+        }
+
         //Build conversation context
         const chatResponsePromt = this.systemPrompt +
           "\n\nLa conversación hasta ahora va así:" + this.chatHistory.getByUserAsText(userId.toString()) +
           "\n\nDatos del pedido hasta el momento:" + this.ordersService.text(order);
 
-        console.log("Full Prompt Sent to MCP Agent:", chatResponsePromt);
-
         // Get chatResponsse from MCP Agent with LLM
-        const chatResponsse = await runMCPAgent(chatResponsePromt);
+        let chatResponsse = await runMCPAgent(chatResponsePromt);
+
+        if (chatResponsse.includes("El cliente ha ") || chatResponsse.includes("**Final Answer**")) {
+          chatResponsse = await getFinalAnswer(chatResponsse)
+        }
+
         // Store assistant chatResponsse in chat history
         this.chatHistory.addMessage(userId.toString(), "assistant", chatResponsse, new Date());
 
         const formattedResponsePromt = "\n\nLa conversación hasta ahora va así:" + this.chatHistory.getByUserAsText(userId.toString()) +
           "\n\nDatos del pedido hasta el momento:" + this.ordersService.text(order);
         const formattedResponse = await getStructuredOutput(formattedResponsePromt)
-
-        console.log({ formattedResponse })
 
         const updatedOrder = this.ordersService.updateOrder(order.id, formattedResponse)
         console.log({ updatedOrder })

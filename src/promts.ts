@@ -41,6 +41,8 @@ stock: Cantidad disponible en inventario
 nextRefill: Fecha de cuándo habrá disponibilidad nuevamente
 `
 
+export const finalAnswerPromt = "Este es la respuesta generada por un LLM. Necesito remover razonamientos y dejar solo la respuesta final:"
+
 export const structuredOutputPromt = (chatHistory: string) => {
 
     return `
