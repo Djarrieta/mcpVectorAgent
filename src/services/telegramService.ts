@@ -67,7 +67,10 @@ export class TelegramService {
         // Get chatResponsse from MCP Agent with LLM
         let chatResponsse = await runMCPAgent(chatResponsePromt);
 
-        if (chatResponsse.includes("El cliente ha ") || chatResponsse.includes("**Final Answer**")) {
+        if (chatResponsse.includes("El cliente ha ") ||
+          chatResponsse.includes("**Final Answer**") ||
+          chatResponsse.includes("Paso ")
+        ) {
           chatResponsse = await getFinalAnswer(chatResponsse)
         }
 
