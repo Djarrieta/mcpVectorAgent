@@ -51,7 +51,7 @@ export const structuredOutputPromt = (chatHistory: string) => {
     INSTRUCCIONES:
     1. Responde ÚNICAMENTE con un objeto JSON válido.
     2. Si un dato no está presente en el texto, omite la propiedad, exepto campos obligatorios.
-    3. Para 'requiresHumanIntervention': Analiza si el mensaje del cliente es ambiguo, le falta información crítica para el envío, o si expresa una queja/duda que un humano deba revisar.
+    3. Para 'requiresHumanIntervention': Analiza si el mensaje del cliente es ambiguo, o si expresa una queja/duda que un humano deba revisar. También si la última respuesta del asistente es """Dame un momento por favor, estoy procesando tu solicitud.""" o similar es que requiere intervención humana.
     4. Los valores de 'price' y 'shippingCost' deben ser números enteros en pesos colombianos (COP).
     5. 'id' debe ser omitido o generado si el contexto lo permite.
 
