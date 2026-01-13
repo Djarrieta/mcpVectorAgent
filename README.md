@@ -1,163 +1,197 @@
 # MCP Vector Agent
 
-A minimal Bun + TypeScript command‑line agent that uses the Model Context Protocol (via `mcp-use`) and a local Qdrant vector store for tool‑augmented LLM reasoning.
+An intelligent AI-powered business assistant that integrates the Model Context Protocol (MCP) with LLMs and Telegram. It provides tool-augmented reasoning with access to e-commerce operations (orders, inventory, shipping) and optional vector search capabilities via Qdrant or SQLite backends.
 
 ## Quick Start
 
-Run (or have running) a local Qdrant instance before using the agent:
+### Prerequisites
+
+- Node.js/Bun runtime
+- Docker (for running Qdrant or databases)
+- Environment variables configured (see [Environment Variables](#environment-variables) section)
+
+### Run with Docker Compose
 
 ```bash
-docker pull qdrant/qdrant
-docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant
+docker-compose up
 ```
 
-Then install deps and ask a question (make sure env vars are set):
+This will start all required services (Qdrant, databases, etc.).
+
+### Run Telegram Bot
 
 ```bash
 bun install
-DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run index.ts "What tools do you have?"
+DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run src/startTelegram.ts
+```
+
+### Run CLI Agent
+
+```bash
+bun install
+DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run src/start.ts
 ```
 
 ## Features
 
-- Lazy‑initialized MCP agent with configurable max steps (default 8)
-- Qdrant-backed memory (collection: `mcp-memory`)
-- Pluggable LLM via LangChain `ChatOpenAI` (e.g. DeepSeek models)
-- Strict env + config validation for predictable runs
+- **Telegram Integration** - Chat with the agent via Telegram bot
+- **MCP Protocol Support** - Configurable MCP servers for extensible tool access
+- **Multiple Backend Options** - SQLite for e-commerce data or Qdrant for vector search
+- **E-Commerce Operations** - Manage orders, inventory, and shipping costs
+- **Chat History** - Maintains conversation context
+- **Structured Output** - LLM-generated structured responses
+- **Lazy-initialized MCP Agent** - Configurable max steps (default 8)
+- **Pluggable LLM** - Support for OpenAI-compatible endpoints (e.g., DeepSeek)
 
 ## Project Structure
 
 ```
-index.ts            # CLI entry
-src/mcpAgent.ts     # Agent bootstrap & run helper
-src/utils.ts        # Env + config helpers
-mcp.config.json     # Declares MCP servers (currently Qdrant)
-qdrant_storage/     # Local Qdrant data (ignored by git)
+src/
+  ├── start.ts                      # CLI entry point
+  ├── startTelegram.ts              # Telegram bot entry point
+  ├── constants.ts                  # Application constants
+  ├── prompts.ts                    # LLM prompts
+  ├── mcpConfig/
+  │   ├── mcp.config.json          # Default MCP configuration
+  │   ├── mcp.config.qdrant.json   # Qdrant vector store config
+  │   └── mcp.config.sqlite.json   # SQLite backend config
+  ├── services/
+  │   ├── llmService.ts            # LLM interface (DeepSeek, OpenAI-compatible)
+  │   ├── mcpService.ts            # MCP protocol handler
+  │   ├── telegramService.ts       # Telegram bot integration
+  │   ├── chatHistorySQLite.ts     # Chat history persistence
+  │   ├── OrdersSQLite.ts          # Orders management
+  │   ├── inventory.SQLite.ts      # Inventory management
+  │   ├── structuredOutputService.ts # Output formatting
+  ├── seedScripts/
+  │   ├── seedInventorySQLite.ts   # Seed inventory data
+  │   ├── seedQdrant.ts            # Seed vector embeddings
+  │   └── seedShippingCostSQLite.ts # Seed shipping costs
+  └── types/
+      └── Order.ts                 # Order data model
+docker-compose.yml                  # Docker services setup
+package.json                        # Dependencies
+tsconfig.json                       # TypeScript configuration
 ```
 
 ## Requirements
 
-- Bun (https://bun.sh)
-- Running Qdrant instance reachable at the URL in `mcp.config.json` (default `http://localhost:6333`)
-- Node-compatible DeepSeek (or OpenAI‑style) endpoint + API key
+- Node.js 18+ or Bun (https://bun.sh)
+- Docker (for running services via docker-compose)
+- LLM API key (DeepSeek, OpenAI, or compatible endpoint)
+- For Qdrant: Running instance reachable at the URL in MCP config
+- For SQLite: Local SQLite databases (auto-created or seeded)
 
 ## Environment Variables
 
-| Variable            | Required | Description                                 |
-| ------------------- | -------- | ------------------------------------------- |
-| `DEEPSEEK_API_KEY`  | yes      | API key for the model endpoint              |
-| `DEEPSEEK_MODEL`    | yes      | Model name passed to LangChain `ChatOpenAI` |
-| `DEEPSEEK_BASE_URL` | optional | Override base URL (self-host / proxy)       |
+| Variable             | Required | Description                                      |
+| -------------------- | -------- | ------------------------------------------------ |
+| `DEEPSEEK_API_KEY`   | yes      | API key for the LLM endpoint                     |
+| `DEEPSEEK_MODEL`     | yes      | Model name (e.g., `deepseek-chat`)               |
+| `DEEPSEEK_BASE_URL`  | optional | Override LLM base URL (default: DeepSeek public) |
+| `TELEGRAM_BOT_TOKEN` | optional | Telegram bot token (required for Telegram mode)  |
 
-Export them or place in a local dotenv file (not committed).
+Export them or place in a `.env` file (not committed).
 
-## Install deps
+## Installation
 
-```
+```bash
 bun install
 ```
 
-## Install uv (for running the Qdrant MCP server)
+## Database Setup
 
-The `mcp.config.json` uses `uvx mcp-server-qdrant`. If you don't have `uv` installed yet:
+### With Docker Compose
 
-```
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Then restart your shell (or source your profile) so `uv` is on PATH, and verify:
-
-```
-uv --version
-uvx mcp-server-qdrant --help
+```bash
+docker-compose up
 ```
 
-(As always, review install scripts before piping to `sh` in security‑sensitive environments.)
+This starts all services and creates necessary databases.
 
-## Run Qdrant with Docker
+### Manual Setup
 
-If you don't already have a local Qdrant running, start one via Docker (the data will persist in the `qdrant_storage/` folder which is git-ignored):
+#### Seed Inventory & Shipping (SQLite)
 
-```
-docker pull qdrant/qdrant
-docker run \
-  -p 6333:6333 \
-  -p 6334:6334 \
-  -v "$(pwd)/qdrant_storage:/qdrant/storage:z" \
-  qdrant/qdrant
+```bash
+bun run src/seedScripts/seedInventorySQLite.ts
+bun run src/seedScripts/seedShippingCostSQLite.ts
 ```
 
-Notes:
+#### Seed Vector Embeddings (Qdrant)
 
-- The final `qdrant/qdrant` in the run command is the image name (sometimes omitted by mistake).
-- Port 6333 is REST/gRPC (auto), 6334 is for the distributed/raft communication; mapping both is handy.
-- Use `:z` only on SELinux systems (Fedora/RHEL). On others you can omit it: `-v "$(pwd)/qdrant_storage:/qdrant/storage"`.
+```bash
+bun run src/seedScripts/seedQdrant.ts
+```
 
 ## Configure MCP Servers
 
-Edit `mcp.config.json`. Current example:
+Choose a configuration based on your backend:
 
-```json
-{
-  "mcpServers": {
-    "qdrant": {
-      "command": "uvx",
-      "args": ["mcp-server-qdrant"],
-      "env": {
-        "QDRANT_URL": "http://localhost:6333",
-        "COLLECTION_NAME": "mcp-memory",
-        "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
-      }
-    }
-  }
-}
+### SQLite (Default)
+
+```bash
+cp src/mcpConfig/mcp.config.sqlite.json src/mcpConfig/mcp.config.json
 ```
 
-Ensure the Qdrant MCP server is installed (e.g. `uv tool install mcp-server-qdrant` or run via `uvx`).
+### Qdrant Vector Store
 
-## Run a Query
-
+```bash
+cp src/mcpConfig/mcp.config.qdrant.json src/mcpConfig/mcp.config.json
 ```
+
+Edit `src/mcpConfig/mcp.config.json` to customize endpoints and settings.
+
+## Run
+
+### Telegram Bot
+
+```bash
 DEEPSEEK_API_KEY=your_key \
-DEEPSEEK_MODEL=your_model \
-DEEPSEEK_BASE_URL=https://api.deepseek.com \
-bun run index.ts "What tools do you have available?"
+DEEPSEEK_MODEL=deepseek-chat \
+TELEGRAM_BOT_TOKEN=your_token \
+bun run src/startTelegram.ts
 ```
 
-(Leave `DEEPSEEK_BASE_URL` unset if using a default public endpoint.)
+Then send messages to your Telegram bot.
 
-Shortcut scripts:
+### CLI Agent
 
-```
-bun run ask "Your question"
-# or with --mcp flag if you add logic for it later
-bun run ask:mcp "Your question"
+```bash
+DEEPSEEK_API_KEY=your_key \
+DEEPSEEK_MODEL=deepseek-chat \
+bun run src/start.ts
 ```
 
 ## Graceful Shutdown
 
-If you add long-running flows, you can import and call `closeMCP()` to close sessions.
+The application handles graceful shutdown of MCP sessions and database connections. Pressing Ctrl+C will clean up resources.
 
 ## Customizing
 
-- Adjust `maxSteps` by passing `{ maxSteps: N }` to `runMCPAgent` call site (modify `index.ts` if needed)
-- Add new MCP servers by extending the `mcpServers` object in `mcp.config.json`
+- **Switch Backends** - Copy the desired MCP config (SQLite or Qdrant) to `src/mcpConfig/mcp.config.json`
+- **Add New Tools** - Extend `mcpServers` in the MCP config file
+- **Adjust Agent Steps** - Modify `maxSteps` in the agent initialization
+- **Seed Data** - Customize seed scripts in `src/seedScripts/` to add your own data
 
 ## Troubleshooting
 
-| Symptom                         | Likely Cause                    | Fix                             |
-| ------------------------------- | ------------------------------- | ------------------------------- |
-| Error: Missing required env var | Env not exported                | Set the variable before running |
-| Invalid JSON in mcp.config.json | Trailing comma / syntax         | Fix JSON & retry                |
-| Connection refused to Qdrant    | Qdrant not running or wrong URL | Start Qdrant / correct URL      |
-| Empty or low-quality answers    | Wrong model name or key         | Verify env vars                 |
+| Symptom                         | Likely Cause                   | Fix                                      |
+| ------------------------------- | ------------------------------ | ---------------------------------------- |
+| Error: Missing required env var | Env not set                    | Set env vars or create `.env` file       |
+| Invalid JSON in MCP config      | Syntax error in config         | Check JSON syntax and fix                |
+| Connection refused to database  | Service not running            | Run `docker-compose up` or start service |
+| Telegram bot not responding     | Missing `TELEGRAM_BOT_TOKEN`   | Set bot token env var                    |
+| Empty or low-quality answers    | Wrong model or invalid API key | Verify LLM credentials                   |
 
 ## Next Ideas
 
-- Add a health command to list available MCP tools
-- Provide Docker compose for Qdrant
-- Add tests (e.g., config loader validation)
-- Add embedding ingestion script
+- Add health check endpoint for service status
+- Expand e-commerce features (payments, refunds, returns)
+- Add more vector search capabilities
+- Implement user authentication for Telegram bot
+- Add comprehensive test suite
+- Support additional LLM providers
 
 ## License
 
