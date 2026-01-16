@@ -4,6 +4,7 @@ import { runMCPAgent, closeMCP } from "./mcpService";
 import { ChatHistorySQLite } from "./chatHistorySQLite";
 import { getFinalAnswer, getStructuredOutput } from "./structuredOutputService";
 import { OrdersSQLite } from "./OrdersSQLite";
+import { newChatResponsePromt } from "../promts";
 
 interface TelegramServiceConfig {
   token: string;
@@ -21,13 +22,11 @@ interface ConversationContext {
 export class TelegramService {
   private bot: Telegraf<Context>;
   private conversations: Map<number, ConversationContext> = new Map();
-  private systemPrompt: string;
   private chatHistory: ChatHistorySQLite;
   private ordersService: OrdersSQLite
 
   constructor(config: TelegramServiceConfig) {
     this.bot = new Telegraf(config.token);
-    this.systemPrompt = config.prompt || "";
     this.chatHistory = new ChatHistorySQLite();
     this.ordersService = new OrdersSQLite()
     this.setupHandlers();
@@ -60,9 +59,9 @@ export class TelegramService {
         }
 
         //Build conversation context
-        const chatResponsePromt = this.systemPrompt +
-          "\n\nLa conversación hasta ahora va así:" + this.chatHistory.getByUserAsText(userId.toString()) +
-          "\n\nDatos del pedido hasta el momento:" + this.ordersService.text(order);
+        const chatHistoryText = this.chatHistory.getByUserAsText(userId.toString());
+        const orderText = this.ordersService.text(order);
+        const chatResponsePromt = newChatResponsePromt(chatHistoryText, orderText);
 
         // Get chatResponsse from MCP Agent with LLM
         let chatResponsse = await runMCPAgent(chatResponsePromt);
