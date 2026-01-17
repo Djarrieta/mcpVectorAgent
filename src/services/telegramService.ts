@@ -200,6 +200,7 @@ export class TelegramService {
       this.chatHistoryService.addMessage(userId.toString(), "assistant", chatResponse, Date.now());
 
       this.ordersService.updateOrder(order.id, formattedResponse);
+      console.log("Updated order:", order);
     } catch (error) {
       console.error("Error processing message:", error);
       // Only reply with error if it's the latest message (optional, but good UX)
