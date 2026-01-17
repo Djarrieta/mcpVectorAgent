@@ -47,11 +47,27 @@ RESPUESTA DEL ASISTENTE:
 
 }
 
-export const finalAnswerPromt = "Este es la respuesta generada por un LLM. Necesito remover razonamientos y dejar solo la respuesta final:"
+export const finalAnswerPromt = (answer: string) => `
+  Tu tarea es limpiar la siguiente respuesta de un LLM.
+  El LLM puede haber incluido bloques de razonamiento (como <think>...</think>), explicaciones internas o metadatos.
 
-export const structuredOutputPromt = (chatHistory: string) => {
+  TU OBJETIVO: Extraer y devolver ÚNICAMENTE la respuesta final visible para el usuario.
 
-    return `
+  REGLAS:
+  1. Elimina cualquier texto entre etiquetas <think> y </think>.
+  2. Elimina prefijos como "Respuesta:", "Final Answer:", etc.
+  3. Devuelve solo el texto limpio.
+  4. Si el texto original no contiene bloques de razonamiento, devuelve el texto original.
+
+  TEXTO ORIGINAL:
+  "${answer}"
+
+  RESPUESTA LIMPIA:
+  `
+
+export const structuredOutputPromt = (chatHistory: string, orderText: string) => {
+
+  return `
     Eres un asistente experto en extracción de datos. Tu tarea es extraer información de pedidos a partir de un historial  de chan con un cliente.
     
     INSTRUCCIONES:
@@ -66,6 +82,9 @@ export const structuredOutputPromt = (chatHistory: string) => {
 
     CHAT CON EL CLIENTE:
     "${chatHistory}"
+
+    DATOS DEL PEDIDO HASTA EL MOMENTO:
+    "${orderText}"
 
     JSON:`
 

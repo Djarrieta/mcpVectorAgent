@@ -64,26 +64,24 @@ export class TelegramService {
 
         // Get chatResponsse from MCP Agent with LLM
         let chatResponsse = await runMCPAgent(chatResponsePromt);
+        chatResponsse = await getFinalAnswer(chatResponsse)
 
-        if (chatResponsse.includes("El cliente ha ") ||
-          chatResponsse.includes("**Final Answer**") ||
-          chatResponsse.includes("Paso ")
-        ) {
-          chatResponsse = await getFinalAnswer(chatResponsse)
-        }
+
+
+        // Send the chatResponsse
+        await ctx.reply(chatResponsse);
 
         // Store assistant chatResponsse in chat history
         this.chatHistory.addMessage(userId.toString(), "assistant", chatResponsse, new Date());
 
-        const formattedResponsePromt = "\n\nLa conversación hasta ahora va así:" + this.chatHistory.getByUserAsText(userId.toString()) +
-          "\n\nDatos del pedido hasta el momento:" + this.ordersService.text(order);
-        const formattedResponse = await getStructuredOutput(formattedResponsePromt)
+        const formattedResponse = await getStructuredOutput(
+          this.chatHistory.getByUserAsText(userId.toString()),
+          this.ordersService.text(order)
+        );
+
 
         const updatedOrder = this.ordersService.updateOrder(order.id, formattedResponse)
         console.log({ updatedOrder })
-
-        // Send the chatResponsse
-        await ctx.reply(chatResponsse);
       } catch (error) {
         console.error("Error processing message:", error);
         await ctx.reply(

@@ -3,10 +3,10 @@ import { getLLMInstance } from "./llmService";
 import { type Order } from "../types/Order";
 import { finalAnswerPromt, structuredOutputPromt } from "../promts";
 
-export async function getStructuredOutput(chatHistory: string): Promise<Order> {
+export async function getStructuredOutput(chatHistory: string, orderText: string): Promise<Order> {
   const llm = getLLMInstance();
 
-  const prompt = structuredOutputPromt(chatHistory)
+  const prompt = structuredOutputPromt(chatHistory, orderText)
 
   try {
     const result = await llm.invoke([new HumanMessage(prompt)]);
@@ -31,7 +31,7 @@ export async function getFinalAnswer(answer: string): Promise<string> {
   const llm = getLLMInstance();
 
   try {
-    const result = await llm.invoke(finalAnswerPromt + answer);
+    const result = await llm.invoke(finalAnswerPromt(answer));
     const content = typeof result.content === 'string' ? result.content : String(result.content);
 
     return content
