@@ -50,6 +50,11 @@ RESPUESTA DEL ASISTENTE:
 export const finalAnswerPromt = (answer: string) => `
   Tu tarea es limpiar la siguiente respuesta de un LLM.
   El LLM puede haber incluido bloques de razonamiento (como <think>...</think>), explicaciones internas o metadatos.
+  EJEMPLOS DE BLOQUES DE RAZONAMIENTO NO DESEADO:
+  <think>...</think>
+  <thinking>...</thinking>
+  """Parece que el cliente no respondió..."""
+
 
   TU OBJETIVO: Extraer y devolver ÚNICAMENTE la respuesta final visible para el usuario.
 

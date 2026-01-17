@@ -22,7 +22,8 @@ export class TelegramService {
   private bot: Telegraf<Context>;
   private conversations: Map<number, ConversationContext> = new Map();
   private chatHistory: ChatHistorySQLite;
-  private ordersService: OrdersSQLite
+  private ordersService: OrdersSQLite;
+  private lastMessageTimestamps: Map<number, number> = new Map();
 
   constructor(config: TelegramServiceConfig) {
     this.bot = new Telegraf(config.token);
@@ -44,6 +45,11 @@ export class TelegramService {
       }
 
       try {
+
+        const timestamp = Date.now();
+        this.lastMessageTimestamps.set(userId, timestamp);
+        console.log(timestamp, this.lastMessageTimestamps)
+
         // Show typing indicator
         await ctx.sendChatAction("typing");
 
@@ -51,35 +57,26 @@ export class TelegramService {
         // Store user messages in chat history
         this.chatHistory.addMessage(userId.toString(), "user", userMessage, new Date());
 
-        console.log(this.ordersService.text(order))
-
         if (order.requiresHumanIntervention) {
           return
         }
 
-        //Build conversation context
-        const chatHistoryText = this.chatHistory.getByUserAsText(userId.toString());
-        const orderText = this.ordersService.text(order);
-        const chatResponsePromt = newChatResponsePromt(chatHistoryText, orderText);
+        const response = await this.processResponse(userId, order, timestamp);
 
-        // Get chatResponsse from MCP Agent with LLM
-        let chatResponsse = await runMCPAgent(chatResponsePromt);
-        chatResponsse = await getFinalAnswer(chatResponsse)
+        console.log(this.lastMessageTimestamps.get(userId))
+
+        if (this.lastMessageTimestamps.get(userId) !== timestamp) {
+          console.log("Message not processed because it is not the last one");
+          return;
+        }
 
         // Send the chatResponsse
-        await ctx.reply(chatResponsse);
+        await ctx.reply(response.chatResponse);
 
         // Store assistant chatResponsse in chat history
-        this.chatHistory.addMessage(userId.toString(), "assistant", chatResponsse, new Date());
+        this.chatHistory.addMessage(userId.toString(), "assistant", response.chatResponse, new Date());
 
-        const formattedResponse = await getStructuredOutput(
-          this.chatHistory.getByUserAsText(userId.toString()),
-          this.ordersService.text(order)
-        );
-
-
-        const updatedOrder = this.ordersService.updateOrder(order.id, formattedResponse)
-        console.log({ updatedOrder })
+        this.ordersService.updateOrder(order.id, response.formattedResponse)
       } catch (error) {
         console.error("Error processing message:", error);
         await ctx.reply(
@@ -194,6 +191,27 @@ export class TelegramService {
    */
   clearUserConversation(userId: number): void {
     this.conversations.delete(userId);
+  }
+
+  private async processResponse(userId: number, order: any, timestamp: number): Promise<{ chatResponse: string, formattedResponse: any, userId: number, timestamp: number }> {
+    //Build conversation context
+    const chatResponsePromt = newChatResponsePromt(this.chatHistory.getByUserAsText(userId.toString()), this.ordersService.text(order));
+
+    // Get chatResponsse from MCP Agent with LLM
+    let chatResponsse = await runMCPAgent(chatResponsePromt);
+    chatResponsse = await getFinalAnswer(chatResponsse)
+
+    const formattedResponse = await getStructuredOutput(
+      this.chatHistory.getByUserAsText(userId.toString()),
+      this.ordersService.text(order)
+    );
+
+    return {
+      chatResponse: chatResponsse,
+      formattedResponse,
+      userId,
+      timestamp
+    }
   }
 
 }
