@@ -200,6 +200,9 @@ export class TelegramService {
       this.chatHistoryService.addMessage(userId.toString(), "assistant", chatResponse, Date.now());
 
       this.ordersService.updateOrder(order.id, formattedResponse);
+
+      //Delete all lastUserUpdates from this user
+      this.lastUserUpdates.delete(userId);
       console.log("Updated order:", order);
     } catch (error) {
       console.error("Error processing message:", error);
