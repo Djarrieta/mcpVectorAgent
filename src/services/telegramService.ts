@@ -174,7 +174,17 @@ export class TelegramService {
         return
       }
 
-      const response = await this.processResponse(userId, order, timestamp);
+      // Build conversation context
+      const chatResponsePromt = newChatResponsePromt(this.chatHistoryService.getByUserAsText(userId.toString()), this.ordersService.text(order));
+
+      // Get chatResponse from MCP Agent with LLM
+      let chatResponse = await runMCPAgent(chatResponsePromt);
+      chatResponse = await getFinalAnswer(chatResponse);
+
+      const formattedResponse = await getStructuredOutput(
+        this.chatHistoryService.getByUserAsText(userId.toString()),
+        this.ordersService.text(order)
+      );
 
       // Check if this is still the latest message for this user
       const latestTimestamp = this.lastUserUpdates.get(userId);
@@ -183,13 +193,13 @@ export class TelegramService {
         return;
       }
 
-      // Send the chatResponsse
-      await ctx.reply(response.chatResponse);
+      // Send the chatResponse
+      await ctx.reply(chatResponse);
 
-      // Store assistant chatResponsse in chat history
-      this.chatHistoryService.addMessage(userId.toString(), "assistant", response.chatResponse, Date.now());
+      // Store assistant chatResponse in chat history
+      this.chatHistoryService.addMessage(userId.toString(), "assistant", chatResponse, Date.now());
 
-      this.ordersService.updateOrder(order.id, response.formattedResponse)
+      this.ordersService.updateOrder(order.id, formattedResponse);
     } catch (error) {
       console.error("Error processing message:", error);
       // Only reply with error if it's the latest message (optional, but good UX)
@@ -198,27 +208,6 @@ export class TelegramService {
           "Dame un momento por favor, estoy procesando tu solicitud."
         );
       }
-    }
-  }
-
-  private async processResponse(userId: number, order: any, timestamp: number): Promise<{ chatResponse: string, formattedResponse: any, userId: number, timestamp: number }> {
-    //Build conversation context
-    const chatResponsePromt = newChatResponsePromt(this.chatHistoryService.getByUserAsText(userId.toString()), this.ordersService.text(order));
-
-    // Get chatResponsse from MCP Agent with LLM
-    let chatResponsse = await runMCPAgent(chatResponsePromt);
-    chatResponsse = await getFinalAnswer(chatResponsse)
-
-    const formattedResponse = await getStructuredOutput(
-      this.chatHistoryService.getByUserAsText(userId.toString()),
-      this.ordersService.text(order)
-    );
-
-    return {
-      chatResponse: chatResponsse,
-      formattedResponse,
-      userId,
-      timestamp
     }
   }
 
