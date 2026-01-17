@@ -38,7 +38,7 @@ function seedInventorySQLite() {
         phone_reference TEXT NOT NULL,
         price REAL NOT NULL,
         stock INTEGER NOT NULL DEFAULT 0,
-        nextRefill TEXT,
+        nextRefill INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -46,7 +46,7 @@ function seedInventorySQLite() {
 
     // 3. Prepare Data
     const inventoryData: any[] = [];
-    
+
     phoneModels.forEach((model) => {
       // Add a 'case' for each model
       inventoryData.push({
@@ -54,7 +54,7 @@ function seedInventorySQLite() {
         phoneReference: model,
         price: Math.floor(Math.random() * (60000 - 35000) + 35000), // COP range
         stock: Math.floor(Math.random() * 20),
-        nextRefill: Math.random() > 0.7 ? new Date(Date.now() + 604800000).toISOString() : null,
+        nextRefill: Math.random() > 0.7 ? Date.now() + 604800000 : null,
       });
 
       // Add a 'skin' for each model

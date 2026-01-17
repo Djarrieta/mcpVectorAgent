@@ -14,7 +14,8 @@
     "ask": "bun run index.ts",
     "ask:mcp": "bun run index.ts -- --mcp",
     "seed": "bun run src/seedScripts/seedShippingCostSQLite.ts && bun run src/seedScripts/seedInventorySQLite.ts ",
-    "telegram": "bun run src/startTelegram.ts"
+    "telegram": "bun run src/startTelegram.ts",
+    "resetDb": "rm -rf sqlite.db && bun run seed"
   },
   "dependencies": {
     "@langchain/openai": "0.6.9",
