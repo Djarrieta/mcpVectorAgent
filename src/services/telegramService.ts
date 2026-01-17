@@ -66,8 +66,6 @@ export class TelegramService {
         let chatResponsse = await runMCPAgent(chatResponsePromt);
         chatResponsse = await getFinalAnswer(chatResponsse)
 
-
-
         // Send the chatResponsse
         await ctx.reply(chatResponsse);
 
