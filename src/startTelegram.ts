@@ -1,5 +1,4 @@
 import { TelegramService } from "./services/telegramService";
-import { newChatResponsePromt } from "./promts";
 
 const startTelegramBot = async () => {
   try {
@@ -15,7 +14,6 @@ const startTelegramBot = async () => {
 
     const telegramService = new TelegramService({
       token,
-      prompt: newChatResponsePromt,
     });
 
     await telegramService.launch();

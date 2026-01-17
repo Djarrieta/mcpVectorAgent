@@ -8,7 +8,6 @@ import { newChatResponsePromt } from "../promts";
 
 interface TelegramServiceConfig {
   token: string;
-  prompt?: string;
 }
 
 interface ConversationContext {
