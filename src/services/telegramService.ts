@@ -23,6 +23,7 @@ export class TelegramService {
   private conversations: Map<number, ConversationContext> = new Map();
   private chatHistoryService: ChatHistorySQLite;
   private ordersService: OrdersSQLite;
+  private lastUserUpdates = new Map<number, number>();
 
   constructor(config: TelegramServiceConfig) {
     this.bot = new Telegraf(config.token);
@@ -35,54 +36,19 @@ export class TelegramService {
 
     // Handle text messages
     this.bot.on(message("text"), async (ctx) => {
-      const userMessage = ctx.message.text;
       const userId = ctx.from?.id;
-
       if (!userId) {
         await ctx.reply("No pude identificar tu usuario.");
         return;
       }
 
-      try {
+      const timestamp = Date.now();
+      this.lastUserUpdates.set(userId, timestamp);
 
-        const timestamp = Date.now();
-        console.log("Processing message at:", timestamp);
-
-        // Show typing indicator
-        await ctx.sendChatAction("typing");
-
-        const order = this.ordersService.getOrCreateByUserId(userId.toString(), { requiresHumanIntervention: false })
-        // Store user messages in chat history
-        this.chatHistoryService.addMessage(userId.toString(), "user", userMessage, timestamp);
-
-        if (order.requiresHumanIntervention) {
-          return
-        }
-
-        const response = await this.processResponse(userId, order, timestamp);
-
-        const lastUserMsg = this.chatHistoryService.getLastUserMessageTimestamp(userId.toString());
-
-        if (lastUserMsg && lastUserMsg !== timestamp) {
-          console.log("Message not processed because it is not the last one");
-          return;
-        }
-
-
-
-        // Send the chatResponsse
-        await ctx.reply(response.chatResponse);
-
-        // Store assistant chatResponsse in chat history
-        this.chatHistoryService.addMessage(userId.toString(), "assistant", response.chatResponse, Date.now());
-
-        this.ordersService.updateOrder(order.id, response.formattedResponse)
-      } catch (error) {
-        console.error("Error processing message:", error);
-        await ctx.reply(
-          "Dame un momento por favor, estoy procesando tu solicitud."
-        );
-      }
+      // Fire and forget - do not await
+      this.handleUserMessage(ctx, userId, ctx.message.text, timestamp).catch(err => {
+        console.error("Error in background message handler:", err);
+      });
     });
 
     // Handle other message types
@@ -191,6 +157,48 @@ export class TelegramService {
    */
   clearUserConversation(userId: number): void {
     this.conversations.delete(userId);
+  }
+
+  private async handleUserMessage(ctx: any, userId: number, userMessage: string, timestamp: number) {
+    try {
+      console.log("Processing message at:", timestamp);
+
+      // Show typing indicator
+      await ctx.sendChatAction("typing");
+
+      const order = this.ordersService.getOrCreateByUserId(userId.toString(), { requiresHumanIntervention: false })
+      // Store user messages in chat history
+      this.chatHistoryService.addMessage(userId.toString(), "user", userMessage, timestamp);
+
+      if (order.requiresHumanIntervention) {
+        return
+      }
+
+      const response = await this.processResponse(userId, order, timestamp);
+
+      // Check if this is still the latest message for this user
+      const latestTimestamp = this.lastUserUpdates.get(userId);
+      if (latestTimestamp && latestTimestamp !== timestamp) {
+        console.log(`Message from ${timestamp} ignored because a newer message (${latestTimestamp}) exists.`);
+        return;
+      }
+
+      // Send the chatResponsse
+      await ctx.reply(response.chatResponse);
+
+      // Store assistant chatResponsse in chat history
+      this.chatHistoryService.addMessage(userId.toString(), "assistant", response.chatResponse, Date.now());
+
+      this.ordersService.updateOrder(order.id, response.formattedResponse)
+    } catch (error) {
+      console.error("Error processing message:", error);
+      // Only reply with error if it's the latest message (optional, but good UX)
+      if (this.lastUserUpdates.get(userId) === timestamp) {
+        await ctx.reply(
+          "Dame un momento por favor, estoy procesando tu solicitud."
+        );
+      }
+    }
   }
 
   private async processResponse(userId: number, order: any, timestamp: number): Promise<{ chatResponse: string, formattedResponse: any, userId: number, timestamp: number }> {
