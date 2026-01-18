@@ -161,30 +161,25 @@ export class TelegramService {
 
   private async handleUserMessage(ctx: any, userId: number, userMessage: string, timestamp: number) {
     try {
-      console.log("Processing message at:", timestamp);
+      console.log(`Processing message at: ${new Date(timestamp).toISOString()}`);
 
       // Show typing indicator
       await ctx.sendChatAction("typing");
 
-      const order = this.ordersService.getOrCreateByUserId(userId.toString(), { requiresHumanIntervention: false })
+      const order = this.ordersService.getOrCreateByUserId(userId.toString(), { requiresHumanIntervention: false, state: "inprogress" })
       // Store user messages in chat history
       this.chatHistoryService.addMessage(userId.toString(), "user", userMessage, timestamp);
 
       if (order.requiresHumanIntervention) {
         return
       }
-
+      console.log(this.ordersService.text(order))
       // Build conversation context
       const chatResponsePromt = newChatResponsePromt(this.chatHistoryService.getByUserAsText(userId.toString()), this.ordersService.text(order));
 
       // Get chatResponse from MCP Agent with LLM
-      let chatResponse = await runMCPAgent(chatResponsePromt);
-      chatResponse = await getFinalAnswer(chatResponse);
-
-      const formattedResponse = await getStructuredOutput(
-        this.chatHistoryService.getByUserAsText(userId.toString()),
-        this.ordersService.text(order)
-      );
+      const mcpResponse = await runMCPAgent(chatResponsePromt);
+      const finalAnswer = await getFinalAnswer(mcpResponse);
 
       // Check if this is still the latest message for this user
       const latestTimestamp = this.lastUserUpdates.get(userId);
@@ -194,10 +189,16 @@ export class TelegramService {
       }
 
       // Send the chatResponse
-      await ctx.reply(chatResponse);
+      await ctx.reply(finalAnswer);
 
       // Store assistant chatResponse in chat history
-      this.chatHistoryService.addMessage(userId.toString(), "assistant", chatResponse, Date.now());
+      this.chatHistoryService.addMessage(userId.toString(), "assistant", finalAnswer, Date.now());
+
+      // Get Order json to update order
+      const formattedResponse = await getStructuredOutput(
+        this.chatHistoryService.getByUserAsText(userId.toString()),
+        this.ordersService.text(order)
+      );
 
       this.ordersService.updateOrder(order.id, formattedResponse);
 

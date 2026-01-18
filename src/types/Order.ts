@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export const OrderSchema = z.object({
   id: z.number().optional(),
-  userId:z.string(),
+  userId: z.string(),
   userName: z.string(),
   email: z.string().email(),
   phone: z.string(),
@@ -15,11 +15,13 @@ export const OrderSchema = z.object({
   address: z.string(),
   estimatedDeliveryDays: z.number().describe("3-5 for normal areas, 10 for remote areas"),
   requiresHumanIntervention: z.boolean().describe("true if something is unclear or needs human attention, otherwise false"),
+  state: z.enum(['inprogress', 'canceled', "accepted", "paid", "shipped", 'delivered']).default('inprogress').describe("The state of the order. inprogress, canceled, accepted, paid, shipped, delivered. canceled means the user is not interested in the order anymore"),
 }).partial() // Makes everything optional
   .required({
-    id:true,
+    id: true,
     requiresHumanIntervention: true,
-    userId:true
+    userId: true,
+    state: true,
   });;
 
 export type Order = z.infer<typeof OrderSchema>;
@@ -40,6 +42,7 @@ export function generateOrderSchemaDescription(): string {
     if (schema instanceof z.ZodString) typeName = "string";
     else if (schema instanceof z.ZodNumber) typeName = "number";
     else if (schema instanceof z.ZodBoolean) typeName = "boolean";
+    else if (schema instanceof z.ZodEnum) typeName = `enum: ${schema.options.join(', ')}`;
 
     const description = schema.description ? ` (${schema.description})` : "";
     return `${typeName}${description}`;

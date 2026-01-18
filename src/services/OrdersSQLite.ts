@@ -28,12 +28,14 @@ export class OrdersSQLite {
       department TEXT,
       city TEXT,
       address TEXT,
+      state TEXT DEFAULT 'inprogress',
       estimatedDeliveryDays INTEGER,
       requiresHumanIntervention INTEGER NOT NULL DEFAULT 0
     );
     CREATE INDEX IF NOT EXISTS idx_order_userId ON orders(userId);
     CREATE INDEX IF NOT EXISTS idx_order_email ON orders(email);
   `);
+
     }
 
     /**
@@ -44,8 +46,8 @@ export class OrdersSQLite {
     INSERT INTO orders (
       userId, userName, email, phone, device, price, 
       shippingCost, department, city, address, 
-      estimatedDeliveryDays, requiresHumanIntervention
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      estimatedDeliveryDays, requiresHumanIntervention, state
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
         const result = stmt.run(
@@ -60,7 +62,8 @@ export class OrdersSQLite {
             order.city ?? null,
             order.address ?? null,
             order.estimatedDeliveryDays ?? null,
-            order.requiresHumanIntervention ? 1 : 0
+            order.requiresHumanIntervention ? 1 : 0,
+            order.state ?? ''
         );
 
         return result.lastInsertRowid;
