@@ -188,8 +188,7 @@ export class TelegramService {
         return;
       }
 
-      // Send the chatResponse
-      await ctx.reply(finalAnswer);
+
 
       // Store assistant chatResponse in chat history
       this.chatHistoryService.addMessage(userId.toString(), "assistant", finalAnswer, Date.now());
@@ -199,6 +198,12 @@ export class TelegramService {
         this.chatHistoryService.getByUserAsText(userId.toString()),
         this.ordersService.text(order)
       );
+      const updatedOrder = this.ordersService.getById(order.id)
+
+      // Send the chatResponse if the order is not in requiresHumanIntervention state
+      if (!updatedOrder?.requiresHumanIntervention) {
+        await ctx.reply(finalAnswer);
+      }
 
       this.ordersService.updateOrder(order.id, formattedResponse);
 
