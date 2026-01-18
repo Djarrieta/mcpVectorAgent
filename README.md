@@ -25,13 +25,6 @@ bun install
 DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run src/startTelegram.ts
 ```
 
-### Run CLI Agent
-
-```bash
-bun install
-DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run src/start.ts
-```
-
 ## Features
 
 - **Telegram Integration** - Chat with the agent via Telegram bot
@@ -47,7 +40,6 @@ DEEPSEEK_API_KEY=your_key DEEPSEEK_MODEL=your_model bun run src/start.ts
 
 ```
 src/
-  ├── start.ts                      # CLI entry point
   ├── startTelegram.ts              # Telegram bot entry point
   ├── constants.ts                  # Application constants
   ├── prompts.ts                    # LLM prompts
@@ -155,13 +147,6 @@ bun run src/startTelegram.ts
 
 Then send messages to your Telegram bot.
 
-### CLI Agent
-
-```bash
-DEEPSEEK_API_KEY=your_key \
-DEEPSEEK_MODEL=deepseek-chat \
-bun run src/start.ts
-```
 
 ## Graceful Shutdown
 
