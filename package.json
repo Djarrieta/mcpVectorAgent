@@ -10,11 +10,8 @@
     "typescript": "^5"
   },
   "scripts": {
-    "start": "bun run src/start.ts",
-    "ask": "bun run index.ts",
-    "ask:mcp": "bun run index.ts -- --mcp",
+    "start": "bun run src/startTelegram.ts",
     "seed": "bun run src/seedScripts/seedShippingCostSQLite.ts && bun run src/seedScripts/seedInventorySQLite.ts ",
-    "telegram": "bun run src/startTelegram.ts",
     "resetDb": "rm -rf sqlite.db && bun run seed"
   },
   "dependencies": {
