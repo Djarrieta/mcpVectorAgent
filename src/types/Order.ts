@@ -16,6 +16,7 @@ export const OrderSchema = z.object({
   estimatedDeliveryDays: z.number().describe("3-5 for normal areas, 10 for remote areas"),
   requiresHumanIntervention: z.boolean().describe("true if something is unclear or needs human attention, otherwise false"),
   state: z.enum(['inprogress', 'canceled', "accepted", "paid", "shipped", 'delivered']).default('inprogress').describe("The state of the order. inprogress, canceled, accepted, paid, shipped, delivered. canceled means the user is not interested in the order anymore"),
+  media: z.array(z.string()).optional().describe("List of image URLs sent by the user"),
 }).partial() // Makes everything optional
   .required({
     id: true,

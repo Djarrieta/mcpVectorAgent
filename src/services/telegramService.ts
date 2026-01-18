@@ -52,10 +52,42 @@ export class TelegramService {
     });
 
     // Handle other message types
+    // Handle photo messages
     this.bot.on(message("photo"), async (ctx) => {
-      await ctx.reply(
-        "📸 Por favor envía solo mensajes de texto para más precisión."
-      );
+      const userId = ctx.from?.id;
+      if (!userId) {
+        await ctx.reply("No pude identificar tu usuario.");
+        return;
+      }
+
+      try {
+        // Get the largest photo (last in array)
+        if (!ctx.message.photo || ctx.message.photo.length === 0) {
+          await ctx.reply("No pude procesar la imagen.");
+          return;
+        }
+        const photo = ctx.message.photo[ctx.message.photo.length - 1];
+        const fileLink = await ctx.telegram.getFileLink(photo?.file_id || "");
+        const imageUrl = fileLink.toString();
+
+        // Get or create order
+        const order = this.ordersService.getOrCreateByUserId(userId.toString(), {
+          requiresHumanIntervention: false,
+          state: "inprogress"
+        });
+
+        // Append to existing media
+        const currentMedia = order.media || [];
+        currentMedia.push(imageUrl);
+
+        // Update order
+        this.ordersService.updateOrder(order.id, { media: currentMedia });
+
+        await ctx.reply("📸 Imagen recibida y guardada en tu orden.");
+      } catch (error) {
+        console.error("Error processing photo:", error);
+        await ctx.reply("Hubo un error al procesar la imagen.");
+      }
     });
 
     this.bot.on(message("video"), async (ctx) => {

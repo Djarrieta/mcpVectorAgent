@@ -30,7 +30,8 @@ export class OrdersSQLite {
       address TEXT,
       state TEXT DEFAULT 'inprogress',
       estimatedDeliveryDays INTEGER,
-      requiresHumanIntervention INTEGER NOT NULL DEFAULT 0
+      requiresHumanIntervention INTEGER NOT NULL DEFAULT 0,
+      media TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_order_userId ON orders(userId);
     CREATE INDEX IF NOT EXISTS idx_order_email ON orders(email);
@@ -46,8 +47,8 @@ export class OrdersSQLite {
     INSERT INTO orders (
       userId, userName, email, phone, device, price, 
       shippingCost, department, city, address, 
-      estimatedDeliveryDays, requiresHumanIntervention, state
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      estimatedDeliveryDays, requiresHumanIntervention, state, media
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
         const result = stmt.run(
@@ -63,7 +64,8 @@ export class OrdersSQLite {
             order.address ?? null,
             order.estimatedDeliveryDays ?? null,
             order.requiresHumanIntervention ? 1 : 0,
-            order.state ?? ''
+            order.state ?? '',
+            order.media ? JSON.stringify(order.media) : null
         );
 
         return result.lastInsertRowid;
@@ -81,6 +83,7 @@ export class OrdersSQLite {
         return {
             ...row,
             requiresHumanIntervention: Boolean(row.requiresHumanIntervention),
+            media: row.media ? JSON.parse(row.media) : undefined
         };
     }
 
@@ -106,6 +109,7 @@ export class OrdersSQLite {
             return {
                 ...existing,
                 requiresHumanIntervention: Boolean(existing.requiresHumanIntervention),
+                media: existing.media ? JSON.parse(existing.media) : undefined
             };
         }
 
@@ -157,6 +161,9 @@ export class OrdersSQLite {
             if (key === 'requiresHumanIntervention') {
                 return value ? 1 : 0;
             }
+            if (key === 'media') {
+                return JSON.stringify(value);
+            }
             return value;
         });
 
@@ -167,7 +174,7 @@ export class OrdersSQLite {
       WHERE id = ?
     `);
 
-        stmt.run(...values, id);
+        stmt.run(...(values as any[]), id);
 
         // 5. Return the fresh data from the DB
         return this.getById(id);
@@ -180,7 +187,8 @@ export class OrdersSQLite {
         const lines = Object.entries(order)
             .map(([key, value]) => {
                 // Handle special formatting for specific keys
-                if (key === 'estimatedDeliveryDays') return `Delivery: ${value} days`;
+                if (key === 'estimatedDeliveryDays') return `Delivery: ${value ?? 'N/A'} days`;
+                if (key === 'media') return `Media (images): ${Array.isArray(value) ? value.join(', ') : 'None'}`;
 
                 const displayValue = value ?? 'N/A';
                 return `${formatLabel(key)}: ${displayValue}`;
