@@ -38,7 +38,7 @@ export class TelegramService {
     this.bot.on(message("text"), async (ctx) => {
       const userId = ctx.from?.id;
       if (!userId) {
-        await ctx.reply("No pude identificar tu usuario.");
+        await ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.");
         return;
       }
 
@@ -56,14 +56,14 @@ export class TelegramService {
     this.bot.on(message("photo"), async (ctx) => {
       const userId = ctx.from?.id;
       if (!userId) {
-        await ctx.reply("No pude identificar tu usuario.");
+        await ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.");
         return;
       }
 
       try {
         // Get the largest photo (last in array)
         if (!ctx.message.photo || ctx.message.photo.length === 0) {
-          await ctx.reply("No pude procesar la imagen.");
+          await ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.");
           return;
         }
         const photo = ctx.message.photo[ctx.message.photo.length - 1];
@@ -86,26 +86,52 @@ export class TelegramService {
         await ctx.reply("📸 Imagen recibida y guardada en tu orden.");
       } catch (error) {
         console.error("Error processing photo:", error);
-        await ctx.reply("Hubo un error al procesar la imagen.");
+        await ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.");
       }
     });
 
     this.bot.on(message("video"), async (ctx) => {
+      const userId = ctx.from?.id;
+      if (!userId) {
+        await ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.");
+        return;
+      }
+
+      const order = this.ordersService.getOrCreateByUserId(userId.toString(), {
+        requiresHumanIntervention: true,
+        state: "inprogress"
+      });
+
+      this.ordersService.updateOrder(order.id, { requiresHumanIntervention: true });
+
       await ctx.reply(
-        "🎥 Por favor envía solo mensajes de texto para más precisión."
+        "🎥 OK, Video recibido. Dame un momento por favor lo valido."
       );
     });
 
     this.bot.on(message("document"), async (ctx) => {
+      const userId = ctx.from?.id;
+      if (!userId) {
+        await ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.");
+        return;
+      }
+
+      const order = this.ordersService.getOrCreateByUserId(userId.toString(), {
+        requiresHumanIntervention: true,
+        state: "inprogress"
+      });
+
+      this.ordersService.updateOrder(order.id, { requiresHumanIntervention: true });
+
       await ctx.reply(
-        "📄 Por favor envía solo mensajes de texto para más precisión."
+        "📄 OK, Documento recibido. Dame un momento por favor lo valido."
       );
     });
 
     // Error handler
     this.bot.catch((err, ctx) => {
       console.error("Telegraf error:", err);
-      ctx.reply("Ocurrió un error. Por favor intenta de nuevo.").catch(
+      ctx.reply("Estoy teniendo problemas en el sistema. Dame un momento por favor.").catch(
         console.error
       );
     });
