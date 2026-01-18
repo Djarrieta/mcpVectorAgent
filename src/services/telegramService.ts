@@ -204,7 +204,7 @@ export class TelegramService {
 
       //Delete all lastUserUpdates from this user
       this.lastUserUpdates.delete(userId);
-      console.log("Updated order:", order);
+      console.log("Updated order:", formattedResponse);
     } catch (error) {
       console.error("Error processing message:", error);
       // Only reply with error if it's the latest message (optional, but good UX)

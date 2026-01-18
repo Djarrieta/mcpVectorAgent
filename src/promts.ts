@@ -90,7 +90,7 @@ export const structuredOutputPromt = (chatHistory: string, orderText: string) =>
     3. Para 'requiresHumanIntervention': Analiza si el mensaje del cliente es ambiguo, o si expresa una queja/duda que un humano deba revisar. También si la última respuesta del asistente es """Dame un momento por favor, estoy procesando tu solicitud.""" o similar es que requiere intervención humana.
     4. Los valores de 'price' y 'shippingCost' deben ser números enteros en pesos colombianos (COP).
     5. 'id' debe ser omitido o generado si el contexto lo permite.
-    6. 'state' debe ser 'inprogress' si se está recolectando información, 'accepted' si el pedido ha sido confirmado, 'paid' si el pedido ha sido pagado, 'shipped' si el pedido ha sido enviado, 'delivered' si el pedido ha sido entregado, 'canceled' si el cliente no tiene más interés en el pedido.
+    6. 'state' debe ser 'inprogress' si se está recolectando información, 'accepted' si el pedido ha sido confirmado, 'canceled' si el cliente no tiene interés en continuar con el pedido.
 
     ESTRUCTURA DEL JSON:
     ${generateOrderSchemaDescription()}
